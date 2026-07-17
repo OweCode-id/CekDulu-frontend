@@ -31,7 +31,7 @@ export function SiteHeader() {
           <Link href="/#cara-kerja" onClick={() => setOpen(false)}>Cara Kerja</Link>
           <Link href="/#metodologi" onClick={() => setOpen(false)}>Metodologi</Link>
           <Link href="/#tentang" onClick={() => setOpen(false)}>Tentang</Link>
-          <Link className="button button-small button-ink" href="/analisis" onClick={() => setOpen(false)}>
+          <Link className="button button-small button-ink" href="/#cek-produk" onClick={() => setOpen(false)}>
             Coba Sekarang <span aria-hidden="true">↗</span>
           </Link>
         </nav>
@@ -66,27 +66,28 @@ export function SiteFooter() {
 
 export function ProductVisual({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={compact ? "product-visual compact" : "product-visual"} aria-label="Ilustrasi iPhone 14 Pro berwarna ungu gelap">
+    <div className={compact ? "product-visual compact" : "product-visual"} aria-label="Visual placeholder produk Tokopedia">
       <div className="phone-back">
         <div className="camera-block">
           <span /><span /><span />
         </div>
         <div className="phone-mark">●</div>
       </div>
-      <span className="product-tag">256 GB</span>
+      <span className="product-tag">PRODUK</span>
     </div>
   );
 }
 
-export function RiskScale({ score = 72, compact = false }: { score?: number; compact?: boolean }) {
+export function RiskScale({ score = 0, compact = false }: { score?: number; compact?: boolean }) {
+  const safeScore = Math.max(0, Math.min(100, score));
   return (
     <div className={compact ? "risk-scale compact" : "risk-scale"}>
-      <div className="risk-track" aria-label={`Skor indikasi risiko ${score} dari 100`}>
+      <div className="risk-track" aria-label={`Skor indikasi risiko ${safeScore} dari 100`}>
         <span className="risk-zone low" />
         <span className="risk-zone medium" />
         <span className="risk-zone high" />
-        <span className="risk-marker" style={{ left: `${score}%` }}>
-          <span>{score}</span>
+        <span className="risk-marker" style={{ left: `${safeScore}%` }}>
+          <span>{safeScore}</span>
         </span>
       </div>
       <div className="risk-labels" aria-hidden="true">
@@ -97,4 +98,3 @@ export function RiskScale({ score = 72, compact = false }: { score?: number; com
     </div>
   );
 }
-
