@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 export function SiteHeader() {
@@ -8,12 +9,12 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="shell header-inner">
-        <a className="brand" href="/" aria-label="CekDulu, kembali ke beranda">
+        <Link className="brand" href="/" aria-label="CekDulu, kembali ke beranda">
           <span className="brand-mark" aria-hidden="true">
             <span className="brand-check">✓</span>
           </span>
           <span>CekDulu</span>
-        </a>
+        </Link>
 
         <button
           className="menu-button"
@@ -27,12 +28,12 @@ export function SiteHeader() {
         </button>
 
         <nav className={open ? "main-nav is-open" : "main-nav"} aria-label="Navigasi utama">
-          <a href="/#cara-kerja" onClick={() => setOpen(false)}>Cara Kerja</a>
-          <a href="/#metodologi" onClick={() => setOpen(false)}>Metodologi</a>
-          <a href="/#tentang" onClick={() => setOpen(false)}>Tentang</a>
-          <a className="button button-small button-ink" href="/analisis" onClick={() => setOpen(false)}>
+          <Link href="/#cara-kerja" onClick={() => setOpen(false)}>Cara Kerja</Link>
+          <Link href="/#metodologi" onClick={() => setOpen(false)}>Metodologi</Link>
+          <Link href="/#tentang" onClick={() => setOpen(false)}>Tentang</Link>
+          <Link className="button button-small button-ink" href="/analisis" onClick={() => setOpen(false)}>
             Coba Sekarang <span aria-hidden="true">↗</span>
-          </a>
+          </Link>
         </nav>
       </div>
     </header>
@@ -44,10 +45,10 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="shell footer-grid">
         <div>
-          <a className="brand brand-footer" href="/">
+          <Link className="brand brand-footer" href="/">
             <span className="brand-mark" aria-hidden="true"><span className="brand-check">✓</span></span>
             <span>CekDulu</span>
-          </a>
+          </Link>
           <p>Asisten investigasi belanja berbasis bukti untuk keputusan yang lebih tenang.</p>
         </div>
         <div className="footer-note">
