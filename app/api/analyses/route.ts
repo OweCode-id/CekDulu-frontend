@@ -29,7 +29,7 @@ export async function POST(request: Request): Promise<Response> {
     });
   } catch {
     return Response.json(
-      { message: "Backend CekDulu tidak dapat dihubungi. Pastikan Django berjalan." },
+      { message: "Backend CekDulu tidak dapat dihubungi. Coba lagi nanti" },
       { status: 502 },
     );
   }
