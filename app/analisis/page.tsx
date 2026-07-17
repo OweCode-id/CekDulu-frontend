@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { ProductVisual, SiteHeader } from "../components/SiteChrome";
 
 const defaultSourceUrl = "https://www.tokopedia.com/gudanggawai/iphone-14-pro-256-gb";
@@ -14,15 +16,11 @@ const stages = [
   { title: "Menyusun laporan", detail: "Bukti diberi bobot dan keterbatasan dicatat", code: "RPT-06" },
 ];
 
-export default function AnalysisPage() {
+function AnalysisContent() {
+  const searchParams = useSearchParams();
   const [activeStage, setActiveStage] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [url, setUrl] = useState(defaultSourceUrl);
-
-  useEffect(() => {
-    const sourceUrl = new URLSearchParams(window.location.search).get("url");
-    if (sourceUrl) setUrl(sourceUrl);
-  }, []);
+  const url = searchParams.get("url") || defaultSourceUrl;
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -111,13 +109,21 @@ export default function AnalysisPage() {
                 <p>{finished ? "Skor, confidence, kontra-sinyal, dan langkah pemeriksaan tersedia." : "Agent tidak akan menebak data yang gagal dikumpulkan."}</p>
               </div>
               {finished ? (
-                <a className="button button-primary" href="/hasil">Baca laporan <span aria-hidden="true">→</span></a>
+                <Link className="button button-primary" href="/hasil">Baca laporan <span aria-hidden="true">→</span></Link>
               ) : <span className="working-dots" aria-hidden="true"><i /><i /><i /></span>}
             </div>
-            {!finished && <a className="skip-link" href="/hasil">Lewati ke laporan demo</a>}
+            {!finished && <Link className="skip-link" href="/hasil">Lewati ke laporan demo</Link>}
           </section>
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AnalysisPage() {
+  return (
+    <Suspense fallback={<div className="analysis-page"><SiteHeader /></div>}>
+      <AnalysisContent />
+    </Suspense>
   );
 }

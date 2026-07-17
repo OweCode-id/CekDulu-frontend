@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { ProductVisual, RiskScale, SiteFooter, SiteHeader } from "../components/SiteChrome";
 
@@ -118,7 +119,7 @@ export default function ResultPage() {
               <p>15:42 WIB · data dapat berubah</p>
             </div>
             <div className="report-actions">
-              <a className="button button-outline" href="/analisis">Analisis Ulang</a>
+              <Link className="button button-outline" href="/analisis">Analisis Ulang</Link>
               <a className="button button-ink" href="https://www.tokopedia.com/" target="_blank" rel="noreferrer">Buka Listing <span aria-hidden="true">↗</span></a>
             </div>
           </div>

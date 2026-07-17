@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { ProductVisual, RiskScale, SiteFooter, SiteHeader } from "./components/SiteChrome";
 
@@ -147,7 +148,7 @@ export default function Home() {
                 <li><span>02</span> Confidence dipisahkan dari tingkat risiko.</li>
                 <li><span>03</span> Sampel dan sumber selalu dicantumkan.</li>
               </ul>
-              <a className="button button-outline" href="/hasil">Buka laporan lengkap <span aria-hidden="true">→</span></a>
+              <Link className="button button-outline" href="/hasil">Buka laporan lengkap <span aria-hidden="true">→</span></Link>
             </div>
             <article className="report-preview">
               <div className="report-preview-head">
