@@ -41,6 +41,7 @@ export type AnalysisResponse = {
   status: AnalysisStatus;
   sourceUrl: string;
   canonicalUrl: string | null;
+  productImageUrl: string | null;
   riskScore: number | null;
   verdict: string | null;
   summary: string | null;

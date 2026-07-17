@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -64,15 +65,46 @@ export function SiteFooter() {
   );
 }
 
-export function ProductVisual({ compact = false }: { compact?: boolean }) {
+type ProductVisualProps = {
+  compact?: boolean;
+  imageUrl?: string | null;
+  productName?: string;
+};
+
+export function ProductVisual({
+  compact = false,
+  imageUrl = null,
+  productName = "produk Tokopedia",
+}: ProductVisualProps) {
+  const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
+  const showProductImage = Boolean(imageUrl) && failedImageUrl !== imageUrl;
+  const className = ["product-visual", compact ? "compact" : "", showProductImage ? "has-image" : ""]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={compact ? "product-visual compact" : "product-visual"} aria-label="Visual placeholder produk Tokopedia">
-      <div className="phone-back">
-        <div className="camera-block">
-          <span /><span /><span />
+    <div
+      className={className}
+      aria-label={showProductImage ? `Foto ${productName} dari Tokopedia` : "Visual placeholder produk Tokopedia"}
+    >
+      {showProductImage && imageUrl ? (
+        <Image
+          className="product-image"
+          src={imageUrl}
+          alt={`Foto ${productName} dari listing Tokopedia`}
+          fill
+          sizes={compact ? "120px" : "(max-width: 720px) 90vw, 420px"}
+          unoptimized
+          onError={() => setFailedImageUrl(imageUrl)}
+        />
+      ) : (
+        <div className="phone-back">
+          <div className="camera-block">
+            <span /><span /><span />
+          </div>
+          <div className="phone-mark">●</div>
         </div>
-        <div className="phone-mark">●</div>
-      </div>
+      )}
       <span className="product-tag">PRODUK</span>
     </div>
   );
