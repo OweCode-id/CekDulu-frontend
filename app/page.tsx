@@ -5,8 +5,6 @@ import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { ProductVisual, RiskScale, SiteFooter, SiteHeader } from "./components/SiteChrome";
 
-const exampleUrl = "https://www.tokopedia.com/gudanggawai/iphone-14-pro-256-gb";
-
 export default function Home() {
   const [url, setUrl] = useState("");
   const [pasteLabel, setPasteLabel] = useState("Tempel");
@@ -66,13 +64,6 @@ export default function Home() {
               {error && <p className="form-error" id="url-error">{error}</p>}
               <div className="form-actions">
                 <button className="button button-primary" type="submit">Periksa Produk <span aria-hidden="true">→</span></button>
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() => { setUrl(exampleUrl); setError(""); }}
-                >
-                  Gunakan contoh <span aria-hidden="true">↗</span>
-                </button>
               </div>
             </form>
           </div>
