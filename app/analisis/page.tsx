@@ -34,6 +34,21 @@ const stages = [
   },
 ];
 
+const analysisCreationRequests = new Map<string, Promise<AnalysisResponse>>();
+
+function createAnalysisOnce(sourceUrl: string): Promise<AnalysisResponse> {
+  const existingRequest = analysisCreationRequests.get(sourceUrl);
+  if (existingRequest) return existingRequest;
+
+  const request = createAnalysis(sourceUrl).catch((reason: unknown) => {
+    analysisCreationRequests.delete(sourceUrl);
+    throw reason;
+  });
+
+  analysisCreationRequests.set(sourceUrl, request);
+  return request;
+}
+
 function stageIndex(status: AnalysisResponse["status"] | undefined): number {
   if (status === "collecting") return 1;
   if (status === "analyzing") return 2;
@@ -68,13 +83,11 @@ function AnalysisContent() {
   const resumeId = searchParams.get("id");
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const startedRef = useRef(false);
   const redirectedRef = useRef(false);
 
   useEffect(() => {
-    if ((!requestedUrl && !resumeId) || startedRef.current) return;
+    if (!requestedUrl && !resumeId) return;
 
-    startedRef.current = true;
     let active = true;
     let pollTimer: number | undefined;
     let redirectTimer: number | undefined;
@@ -117,7 +130,7 @@ function AnalysisContent() {
       let id = resumeId;
 
       if (!id && requestedUrl) {
-        const created = await createAnalysis(requestedUrl);
+        const created = await createAnalysisOnce(requestedUrl);
         if (!active) return;
         setAnalysis(created);
         id = created.id;
