@@ -4,64 +4,56 @@ import Link from "next/link";
 import { useState } from "react";
 import { ProductVisual, RiskScale, SiteFooter, SiteHeader } from "../components/SiteChrome";
 
-type Tab = "Ringkasan" | "Harga" | "Review" | "Toko" | "Listing" | "Sumber";
+type Tab = "Ringkasan" | "Harga" | "Review" | "Toko" | "Listing";
 type Evidence = {
   id: string;
-  category: Exclude<Tab, "Ringkasan" | "Sumber">;
+  category: Exclude<Tab, "Ringkasan">;
   type: "risk" | "counter";
   title: string;
   contribution: string;
   finding: string;
   confidence: string;
   sample: string;
-  source: string;
 };
 
-const tabs: Tab[] = ["Ringkasan", "Harga", "Review", "Toko", "Listing", "Sumber"];
+const tabs: Tab[] = ["Ringkasan", "Harga", "Review", "Toko", "Listing"];
 
 const evidence: Evidence[] = [
   {
     id: "P-01", category: "Harga", type: "risk", title: "Harga 39% di bawah median pembanding", contribution: "+18 risiko",
     finding: "Harga listing Rp4,2 juta, sedangkan median delapan produk dengan model dan kapasitas sebanding adalah Rp6,89 juta.",
-    confidence: "Tinggi", sample: "8 listing pembanding", source: "Snapshot harga #P-01",
+    confidence: "Tinggi", sample: "8 listing pembanding",
   },
   {
     id: "R-03", category: "Review", type: "risk", title: "Keluhan IMEI muncul berulang", contribution: "+15 risiko",
     finding: "Enam review menyebut IMEI tidak terdaftar, tidak cocok, atau perlu diperiksa kembali setelah barang diterima.",
-    confidence: "Sedang", sample: "6 dari 40 review", source: "Sampel review #R-03",
+    confidence: "Sedang", sample: "6 dari 40 review",
   },
   {
     id: "R-07", category: "Review", type: "risk", title: "Ajakan berpindah ke WhatsApp", contribution: "+13 risiko",
     finding: "Dua pembeli menyebut penjual meminta komunikasi lanjutan melalui WhatsApp sebelum transaksi selesai.",
-    confidence: "Sedang", sample: "2 dari 40 review", source: "Sampel review #R-07",
+    confidence: "Sedang", sample: "2 dari 40 review",
   },
   {
     id: "L-02", category: "Listing", type: "risk", title: "Informasi garansi belum konsisten", contribution: "+8 risiko",
     finding: "Judul menyebut garansi resmi, tetapi bagian deskripsi mencantumkan garansi distributor selama 12 bulan.",
-    confidence: "Tinggi", sample: "2 bagian listing", source: "Snapshot listing #L-02",
+    confidence: "Tinggi", sample: "2 bagian listing",
   },
   {
     id: "T-02", category: "Toko", type: "counter", title: "Toko telah beroperasi selama empat tahun", contribution: "−6 risiko",
     finding: "Profil publik toko menunjukkan aktivitas penjualan yang konsisten sejak Juli 2022.",
-    confidence: "Tinggi", sample: "1 profil toko", source: "Profil toko #T-02",
+    confidence: "Tinggi", sample: "1 profil toko",
   },
   {
     id: "T-05", category: "Toko", type: "counter", title: "Lebih dari 12.000 transaksi selesai", contribution: "−5 risiko",
     finding: "Indikator publik menunjukkan 12.487 transaksi telah selesai, dengan rating toko 4,8 dari 5.",
-    confidence: "Tinggi", sample: "12.487 transaksi", source: "Reputasi toko #T-05",
+    confidence: "Tinggi", sample: "12.487 transaksi",
   },
   {
     id: "L-06", category: "Listing", type: "counter", title: "Foto produk konsisten secara internal", contribution: "−4 risiko",
     finding: "Warna, susunan kamera, kapasitas, dan label model konsisten pada sembilan foto listing yang diperiksa.",
-    confidence: "Sedang", sample: "9 foto listing", source: "Snapshot media #L-06",
+    confidence: "Sedang", sample: "9 foto listing",
   },
-];
-
-const sources = [
-  { id: "SRC-01", title: "Listing produk Tokopedia", scope: "Nama, harga, variasi, deskripsi, foto", checked: "16 Jul 2026 · 15:42:18", coverage: "12 field" },
-  { id: "SRC-02", title: "Sampel review produk", scope: "Rating, teks, varian, usia ulasan", checked: "16 Jul 2026 · 15:42:46", coverage: "40 / 2.314" },
-  { id: "SRC-03", title: "Profil publik toko", scope: "Usia toko, rating, transaksi, badge", checked: "16 Jul 2026 · 15:43:02", coverage: "8 field" },
-  { id: "SRC-04", title: "Listing produk pembanding", scope: "Model, kapasitas, kondisi, harga aktif", checked: "16 Jul 2026 · 15:43:21", coverage: "8 listing" },
 ];
 
 export default function ResultPage() {
@@ -142,11 +134,11 @@ export default function ResultPage() {
           </nav>
         </div>
 
-        <section className="evidence-section shell" id="sumber-data">
+        <section className="evidence-section shell" id="temuan">
           <div className="evidence-heading">
             <div>
-              <span className="inspection-label">{activeTab === "Sumber" ? "REGISTER SUMBER" : `TEMUAN / ${activeTab.toUpperCase()}`}</span>
-              <h2>{activeTab === "Sumber" ? "Jejak sumber yang diperiksa" : activeTab === "Ringkasan" ? "Bukti yang paling memengaruhi laporan" : `Temuan terkait ${activeTab.toLowerCase()}`}</h2>
+              <span className="inspection-label">{`TEMUAN / ${activeTab.toUpperCase()}`}</span>
+              <h2>{activeTab === "Ringkasan" ? "Bukti yang paling memengaruhi laporan" : `Temuan terkait ${activeTab.toLowerCase()}`}</h2>
             </div>
             <div className="legend">
               <span><i className="legend-dot risk" /> Sinyal risiko</span>
@@ -154,38 +146,22 @@ export default function ResultPage() {
             </div>
           </div>
 
-          {activeTab !== "Sumber" ? (
-            <div className="evidence-grid">
-              {visibleEvidence.map((item) => (
-                <article className={`evidence-card ${item.type}`} key={item.id}>
-                  <div className="evidence-card-top">
-                    <span className="evidence-id">BUKTI {item.id}</span>
-                    <span className="contribution">{item.contribution}</span>
-                  </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.finding}</p>
-                  <dl className="evidence-meta">
-                    <div><dt>Keyakinan</dt><dd>{item.confidence}</dd></div>
-                    <div><dt>Sampel</dt><dd>{item.sample}</dd></div>
-                  </dl>
-                  <a href="#sumber-data">Lihat {item.source} <span aria-hidden="true">↗</span></a>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="source-register">
-              {sources.map((source, index) => (
-                <article key={source.id}>
-                  <span className="source-number">{String(index + 1).padStart(2, '0')}</span>
-                  <div><span className="evidence-id">{source.id}</span><h3>{source.title}</h3><p>{source.scope}</p></div>
-                  <div><span>CAKUPAN</span><strong>{source.coverage}</strong></div>
-                  <div><span>DIAKSES</span><strong>{source.checked}</strong></div>
-                  <a href="#sumber-data" aria-label={`Buka catatan ${source.title}`}>↗</a>
-                </article>
-              ))}
-              <div className="source-limit"><b>Catatan batasan</b> Harga pembanding berasal dari listing publik dengan model dan kapasitas serupa. Kondisi fisik setiap unit tidak dapat diverifikasi otomatis.</div>
-            </div>
-          )}
+          <div className="evidence-grid">
+            {visibleEvidence.map((item) => (
+              <article className={`evidence-card ${item.type}`} key={item.id}>
+                <div className="evidence-card-top">
+                  <span className="evidence-id">BUKTI {item.id}</span>
+                  <span className="contribution">{item.contribution}</span>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.finding}</p>
+                <dl className="evidence-meta">
+                  <div><dt>Keyakinan</dt><dd>{item.confidence}</dd></div>
+                  <div><dt>Sampel</dt><dd>{item.sample}</dd></div>
+                </dl>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="checklist-section">
@@ -217,4 +193,3 @@ export default function ResultPage() {
     </>
   );
 }
-
