@@ -1,0 +1,36 @@
+const DEFAULT_BACKEND_URL = "http://127.0.0.1:8080";
+
+function backendUrl(path: string): string {
+  const baseUrl = (
+    process.env.CEKDULU_API_BASE_URL ??
+    process.env.NEXT_PUBLIC_API_BASE_URL ??
+    DEFAULT_BACKEND_URL
+  ).replace(/\/$/, "");
+  return `${baseUrl}${path}`;
+}
+
+export async function POST(request: Request): Promise<Response> {
+  try {
+    const body = await request.text();
+    const response = await fetch(backendUrl("/api/v1/analyses/"), {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body,
+      cache: "no-store",
+    });
+    const payload = await response.text();
+
+    return new Response(payload, {
+      status: response.status,
+      headers: { "Content-Type": response.headers.get("Content-Type") ?? "application/json" },
+    });
+  } catch {
+    return Response.json(
+      { message: "Backend CekDulu tidak dapat dihubungi. Pastikan Django berjalan." },
+      { status: 502 },
+    );
+  }
+}

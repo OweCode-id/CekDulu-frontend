@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { ProductVisual, RiskScale, SiteFooter, SiteHeader } from "./components/SiteChrome";
 
@@ -39,7 +41,7 @@ export default function Home() {
     <>
       <SiteHeader />
       <main>
-        <section className="hero shell">
+        <section className="hero shell" id="cek-produk">
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> ASISTEN BELANJA AMAN</div>
             <h1>CekDulu sebelum <span className="headline-mark">checkout.</span></h1>
@@ -146,7 +148,7 @@ export default function Home() {
                 <li><span>02</span> Confidence dipisahkan dari tingkat risiko.</li>
                 <li><span>03</span> Sampel dan sumber selalu dicantumkan.</li>
               </ul>
-              <a className="button button-outline" href="/hasil">Buka laporan lengkap <span aria-hidden="true">→</span></a>
+              <Link className="button button-outline" href="/#cek-produk">Periksa produkmu <span aria-hidden="true">→</span></Link>
             </div>
             <article className="report-preview">
               <div className="report-preview-head">
@@ -188,12 +190,11 @@ export default function Home() {
           <div className="about-card">
             <div className="agent-profile">
               <div className="agent-portrait">
-                <img
+                <Image
                   src="/agent-mascot-v2.webp"
                   alt="Ilustrasi agent investigasi CekDulu"
                   width="160"
                   height="160"
-                  loading="lazy"
                 />
               </div>
               <span className="agent-status-dot" />

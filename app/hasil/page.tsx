@@ -1,63 +1,158 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { ProductVisual, RiskScale, SiteFooter, SiteHeader } from "../components/SiteChrome";
+import {
+  AnalysisResponse,
+  AnalysisSignal,
+  confidenceLabel,
+  describeTokopediaUrl,
+  getAnalysis,
+  verdictCopy,
+} from "../lib/analysis-api";
 
 type Tab = "Ringkasan" | "Harga" | "Review" | "Toko" | "Listing";
-type Evidence = {
-  id: string;
-  category: Exclude<Tab, "Ringkasan">;
-  type: "risk" | "counter";
-  title: string;
-  contribution: string;
-  finding: string;
-  confidence: string;
-  sample: string;
-};
 
 const tabs: Tab[] = ["Ringkasan", "Harga", "Review", "Toko", "Listing"];
 
-const evidence: Evidence[] = [
-  {
-    id: "P-01", category: "Harga", type: "risk", title: "Harga 39% di bawah median pembanding", contribution: "+18 risiko",
-    finding: "Harga listing Rp4,2 juta, sedangkan median delapan produk dengan model dan kapasitas sebanding adalah Rp6,89 juta.",
-    confidence: "Tinggi", sample: "8 listing pembanding",
-  },
-  {
-    id: "R-03", category: "Review", type: "risk", title: "Keluhan IMEI muncul berulang", contribution: "+15 risiko",
-    finding: "Enam review menyebut IMEI tidak terdaftar, tidak cocok, atau perlu diperiksa kembali setelah barang diterima.",
-    confidence: "Sedang", sample: "6 dari 40 review",
-  },
-  {
-    id: "R-07", category: "Review", type: "risk", title: "Ajakan berpindah ke WhatsApp", contribution: "+13 risiko",
-    finding: "Dua pembeli menyebut penjual meminta komunikasi lanjutan melalui WhatsApp sebelum transaksi selesai.",
-    confidence: "Sedang", sample: "2 dari 40 review",
-  },
-  {
-    id: "L-02", category: "Listing", type: "risk", title: "Informasi garansi belum konsisten", contribution: "+8 risiko",
-    finding: "Judul menyebut garansi resmi, tetapi bagian deskripsi mencantumkan garansi distributor selama 12 bulan.",
-    confidence: "Tinggi", sample: "2 bagian listing",
-  },
-  {
-    id: "T-02", category: "Toko", type: "counter", title: "Toko telah beroperasi selama empat tahun", contribution: "−6 risiko",
-    finding: "Profil publik toko menunjukkan aktivitas penjualan yang konsisten sejak Juli 2022.",
-    confidence: "Tinggi", sample: "1 profil toko",
-  },
-  {
-    id: "T-05", category: "Toko", type: "counter", title: "Lebih dari 12.000 transaksi selesai", contribution: "−5 risiko",
-    finding: "Indikator publik menunjukkan 12.487 transaksi telah selesai, dengan rating toko 4,8 dari 5.",
-    confidence: "Tinggi", sample: "12.487 transaksi",
-  },
-  {
-    id: "L-06", category: "Listing", type: "counter", title: "Foto produk konsisten secara internal", contribution: "−4 risiko",
-    finding: "Warna, susunan kamera, kapasitas, dan label model konsisten pada sembilan foto listing yang diperiksa.",
-    confidence: "Sedang", sample: "9 foto listing",
-  },
-];
+function signalCategory(signal: AnalysisSignal): Exclude<Tab, "Ringkasan"> {
+  const code = signal.code.toUpperCase();
+  if (code.includes("PRICE") || code.includes("HARGA")) return "Harga";
+  if (code.includes("STORE") || code.includes("TOKO") || code.includes("OFFICIAL")) return "Toko";
+  if (
+    code.includes("REVIEW") ||
+    code.includes("ITEM") ||
+    code.includes("COUNTERFEIT") ||
+    code.includes("DAMAGED") ||
+    code.includes("WRONG")
+  ) {
+    return "Review";
+  }
+  return "Listing";
+}
 
-export default function ResultPage() {
+function impactLabel(impact: number): string {
+  if (impact > 0) return `+${impact} risiko`;
+  if (impact < 0) return `−${Math.abs(impact)} risiko`;
+  return "0 risiko";
+}
+
+function formatCheckedAt(value: string | null): { date: string; time: string } {
+  if (!value) return { date: "Waktu tidak tersedia", time: "Data dapat berubah" };
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return { date: "Waktu tidak tersedia", time: "Data dapat berubah" };
+  return {
+    date: new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "Asia/Jakarta",
+    }).format(date),
+    time: `${new Intl.DateTimeFormat("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Jakarta",
+    }).format(date)} WIB · data dapat berubah`,
+  };
+}
+
+function ResultState({ title, message }: { title: string; message: string }) {
+  return (
+    <>
+      <SiteHeader />
+      <main className="result-main result-state shell">
+        <span className="inspection-label">LAPORAN CEKDULU</span>
+        <h1>{title}</h1>
+        <p>{message}</p>
+        <Link className="button button-primary" href="/">Kembali ke beranda</Link>
+      </main>
+      <SiteFooter />
+    </>
+  );
+}
+
+function ResultContent() {
+  const searchParams = useSearchParams();
+  const analysisId = searchParams.get("id");
+  const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("Ringkasan");
-  const visibleEvidence = activeTab === "Ringkasan" ? evidence : evidence.filter((item) => item.category === activeTab);
+
+  useEffect(() => {
+    if (!analysisId) return;
+    let active = true;
+
+    void getAnalysis(analysisId)
+      .then((latest) => {
+        if (!active) return;
+        if (["queued", "collecting", "analyzing"].includes(latest.status)) {
+          const query = new URLSearchParams({ id: latest.id, url: latest.sourceUrl });
+          window.location.replace(`/analisis?${query.toString()}`);
+          return;
+        }
+        setAnalysis(latest);
+        if (latest.status === "failed") {
+          setError(latest.error?.message ?? "Analisis tidak dapat diselesaikan.");
+        }
+      })
+      .catch((reason: unknown) => {
+        if (!active) return;
+        setError(reason instanceof Error ? reason.message : "Laporan tidak dapat dimuat.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [analysisId]);
+
+  if (!analysisId) {
+    return (
+      <ResultState
+        title="Belum ada laporan yang dipilih."
+        message="Mulai pemeriksaan dari tautan produk Tokopedia untuk membuat laporan baru."
+      />
+    );
+  }
+
+  if (error) {
+    return <ResultState title="Laporan belum dapat ditampilkan." message={error} />;
+  }
+
+  if (!analysis) {
+    return (
+      <ResultState
+        title="Sedang memuat laporan."
+        message="CekDulu sedang mengambil hasil pemeriksaan terbaru."
+      />
+    );
+  }
+
+  if (!analysis.result) {
+    return (
+      <ResultState
+        title="Hasil analisis belum tersedia."
+        message="Backend menyelesaikan pekerjaan tanpa data laporan yang dapat ditampilkan."
+      />
+    );
+  }
+
+  const result = analysis.result;
+  const product = describeTokopediaUrl(analysis.canonicalUrl ?? analysis.sourceUrl);
+  const verdict = verdictCopy(result.verdict);
+  const checkedAt = formatCheckedAt(analysis.completedAt ?? analysis.updatedAt);
+  const signals = Array.isArray(result.signals) ? result.signals : [];
+  const visibleSignals = activeTab === "Ringkasan"
+    ? signals
+    : signals.filter((signal) => signalCategory(signal) === activeTab);
+  const reasons = result.explanation?.reasons ?? [];
+  const followUps = result.explanation?.followUpQuestions ?? [];
+  const limitations = result.limitations ?? [];
+  const sourceUrl = analysis.canonicalUrl ?? analysis.sourceUrl;
+  const caseId = analysis.id.slice(0, 8).toUpperCase();
 
   return (
     <>
@@ -65,53 +160,62 @@ export default function ResultPage() {
       <main className="result-main">
         <section className="report-hero shell">
           <div className="report-kicker-row">
-            <span className="inspection-label">LAPORAN RISIKO / #CD-0716-042</span>
-            <span className="verification-stamp"><b>✓</b> BUKTI TERNORMALISASI</span>
+            <span className="inspection-label">LAPORAN RISIKO / #{caseId}</span>
+            <span className="verification-stamp"><b>✓</b> ANALISIS SELESAI</span>
           </div>
 
           <div className="report-summary-grid">
             <div className="product-summary">
               <ProductVisual compact />
               <div>
-                <span className="source-badge">TOKOPEDIA · LISTING AKTIF</span>
-                <h1>iPhone 14 Pro 256 GB</h1>
-                <p>Gudang Gawai Nusantara <span>·</span> Jakarta Utara</p>
-                <strong>Rp4.200.000</strong>
+                <span className="source-badge">TOKOPEDIA · DATA PUBLIK</span>
+                <h1>{product.productName}</h1>
+                <p>{product.storeName}</p>
+                <strong>Listing telah diperiksa</strong>
               </div>
             </div>
 
             <div className="verdict-summary">
               <span className="micro-label">INDIKASI RISIKO</span>
-              <h2>Perlu Berhati-hati</h2>
-              <p>Ada beberapa sinyal yang perlu dikonfirmasi sebelum melakukan pembayaran.</p>
+              <h2>{verdict.label}</h2>
+              <p>{result.explanation?.summary || analysis.summary || verdict.description}</p>
             </div>
 
             <div className="score-summary">
-              <div className="score-title"><strong>72</strong><span>/100<br />SKOR RISIKO</span></div>
-              <RiskScale score={72} compact />
+              <div className="score-title">
+                <strong>{result.riskScore}</strong>
+                <span>/100<br />SKOR RISIKO</span>
+              </div>
+              <RiskScale score={result.riskScore} compact />
             </div>
           </div>
 
           <div className="report-metrics">
             <div>
               <span className="metric-label">TINGKAT KEYAKINAN</span>
-              <strong>68%</strong>
-              <div className="confidence-track"><span style={{ width: '68%' }} /></div>
-              <small>Sedang · sebagian data perlu verifikasi</small>
+              <strong>{result.confidence.score}%</strong>
+              <div className="confidence-track">
+                <span style={{ width: `${result.confidence.score}%` }} />
+              </div>
+              <small>{confidenceLabel(result.confidence.level)} · dipisahkan dari skor risiko</small>
             </div>
             <div>
-              <span className="metric-label">CAKUPAN DATA</span>
-              <strong>40 <small>dari 2.314 review</small></strong>
-              <p>8 harga pembanding</p>
+              <span className="metric-label">TRUST SCORE</span>
+              <strong>{result.trustScore}<small> / 100</small></strong>
+              <p>{signals.length} sinyal terukur</p>
             </div>
             <div>
               <span className="metric-label">TERAKHIR DIPERIKSA</span>
-              <strong className="date-value">16 Juli 2026</strong>
-              <p>15:42 WIB · data dapat berubah</p>
+              <strong className="date-value">{checkedAt.date}</strong>
+              <p>{checkedAt.time}</p>
             </div>
             <div className="report-actions">
-              <a className="button button-outline" href="/analisis">Analisis Ulang</a>
-              <a className="button button-ink" href="https://www.tokopedia.com/" target="_blank" rel="noreferrer">Buka Listing <span aria-hidden="true">↗</span></a>
+              <Link className="button button-outline" href={`/analisis?url=${encodeURIComponent(analysis.sourceUrl)}`}>
+                Analisis Ulang
+              </Link>
+              <a className="button button-ink" href={sourceUrl} target="_blank" rel="noreferrer">
+                Buka Listing <span aria-hidden="true">↗</span>
+              </a>
             </div>
           </div>
         </section>
@@ -136,7 +240,11 @@ export default function ResultPage() {
           <div className="evidence-heading">
             <div>
               <span className="inspection-label">{`TEMUAN / ${activeTab.toUpperCase()}`}</span>
-              <h2>{activeTab === "Ringkasan" ? "Bukti yang paling memengaruhi laporan" : `Temuan terkait ${activeTab.toLowerCase()}`}</h2>
+              <h2>
+                {activeTab === "Ringkasan"
+                  ? "Sinyal yang memengaruhi skor"
+                  : `Temuan terkait ${activeTab.toLowerCase()}`}
+              </h2>
             </div>
             <div className="legend">
               <span><i className="legend-dot risk" /> Sinyal risiko</span>
@@ -144,50 +252,91 @@ export default function ResultPage() {
             </div>
           </div>
 
-          <div className="evidence-grid">
-            {visibleEvidence.map((item) => (
-              <article className={`evidence-card ${item.type}`} key={item.id}>
-                <div className="evidence-card-top">
-                  <span className="evidence-id">BUKTI {item.id}</span>
-                  <span className="contribution">{item.contribution}</span>
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.finding}</p>
-                <dl className="evidence-meta">
-                  <div><dt>Keyakinan</dt><dd>{item.confidence}</dd></div>
-                  <div><dt>Sampel</dt><dd>{item.sample}</dd></div>
-                </dl>
-              </article>
-            ))}
-          </div>
+          {visibleSignals.length > 0 ? (
+            <div className="evidence-grid">
+              {visibleSignals.map((signal) => (
+                <article className={`evidence-card ${signal.impact > 0 ? "risk" : "counter"}`} key={signal.code}>
+                  <div className="evidence-card-top">
+                    <span className="evidence-id">BUKTI {signal.code}</span>
+                    <span className="contribution">{impactLabel(signal.impact)}</span>
+                  </div>
+                  <h3>{signal.title}</h3>
+                  <p>{signal.explanation}</p>
+                  <dl className="evidence-meta">
+                    <div><dt>Bobot</dt><dd>{signal.severity}</dd></div>
+                    <div>
+                      <dt>Referensi</dt>
+                      <dd title={signal.evidenceRefs.join(", ")}>
+                        {signal.evidenceRefs.length > 0 ? `${signal.evidenceRefs.length} sumber data` : "Aturan skor"}
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-evidence">
+              <strong>Belum ada sinyal pada kategori ini.</strong>
+              <p>Ini tidak berarti transaksi pasti aman; data pada kategori tersebut mungkin terbatas.</p>
+            </div>
+          )}
+
+          {reasons.length > 0 && (
+            <div className="reason-panel">
+              <span className="inspection-label">ALASAN UTAMA</span>
+              <ul>
+                {reasons.map((reason) => <li key={reason}>{reason}</li>)}
+              </ul>
+            </div>
+          )}
         </section>
 
         <section className="checklist-section">
           <div className="shell checklist-grid">
             <div className="checklist-intro">
-              <span className="inspection-label">TINDAKAN PRAKTIS / 03 LANGKAH</span>
+              <span className="inspection-label">TINDAKAN PRAKTIS / {String(followUps.length).padStart(2, "0")} LANGKAH</span>
               <h2>Sebelum membeli</h2>
-              <p>Laporan ini bukan akhir pemeriksaan. Gunakan temuan di atas untuk meminta bukti tambahan dari penjual.</p>
+              <p>Laporan ini bukan akhir pemeriksaan. Gunakan pertanyaan berikut untuk meminta kepastian tambahan.</p>
               <div className="agent-signoff">
                 <span className="agent-signoff-mascot">
-                  <img
+                  <Image
                     src="/agent-mascot-v2.webp"
                     alt="Maskot Agent CekDulu"
                     width="52"
                     height="52"
-                    loading="lazy"
                   />
                 </span>
-                <div><b>Disusun oleh Agent CD-01</b><span>Scoring protocol mvp-1 · Confidence sedang</span></div>
+                <div>
+                  <b>Disusun oleh Agent CD-01</b>
+                  <span>{result.scoreMethod} · Confidence {confidenceLabel(result.confidence.level).toLowerCase()}</span>
+                </div>
               </div>
             </div>
             <ol className="action-checklist">
-              <li><span>01</span><div><h3>Minta foto IMEI yang aktual</h3><p>Cocokkan nomor pada perangkat, dus, dan situs pemeriksaan resmi sebelum masa komplain berakhir.</p></div><b>PRIORITAS</b></li>
-              <li><span>02</span><div><h3>Konfirmasi jenis garansi</h3><p>Minta penjual menjelaskan perbedaan antara klaim garansi resmi dan garansi distributor di deskripsi.</p></div><b>PENTING</b></li>
-              <li><span>03</span><div><h3>Tetap bayar di Tokopedia</h3><p>Jangan memindahkan komunikasi atau pembayaran ke WhatsApp, transfer langsung, atau kanal pribadi lain.</p></div><b>WAJIB</b></li>
+              {(followUps.length > 0 ? followUps : [
+                "Apakah detail produk dan kebijakan pengembalian sudah dikonfirmasi?",
+              ]).map((question, index) => (
+                <li key={question}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3>{question}</h3>
+                    <p>Konfirmasi melalui fitur resmi Tokopedia dan simpan bukti percakapan.</p>
+                  </div>
+                  <b>{index === 0 ? "PRIORITAS" : "PERIKSA"}</b>
+                </li>
+              ))}
             </ol>
           </div>
         </section>
+
+        {limitations.length > 0 && (
+          <section className="limitations-panel shell">
+            <span className="inspection-label">KETERBATASAN PEMERIKSAAN</span>
+            <ul>
+              {limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
+            </ul>
+          </section>
+        )}
 
         <section className="disclaimer shell">
           <span>ⓘ</span>
@@ -197,5 +346,13 @@ export default function ResultPage() {
       </main>
       <SiteFooter />
     </>
+  );
+}
+
+export default function ResultPage() {
+  return (
+    <Suspense fallback={<ResultState title="Sedang memuat laporan." message="CekDulu sedang menyiapkan data hasil pemeriksaan." />}>
+      <ResultContent />
+    </Suspense>
   );
 }
