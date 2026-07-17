@@ -42,11 +42,10 @@ export default function Home() {
         <section className="hero shell">
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> ASISTEN BELANJA AMAN</div>
-            <h1>Cek dulu sebelum <span className="headline-mark">checkout.</span></h1>
+            <h1>CekDulu sebelum <span className="headline-mark">checkout.</span></h1>
             <p className="hero-lede">
-              Kami menyelidiki listing produk, pola harga, mutu review, dan rekam jejak toko—lalu merangkumnya menjadi indikasi risiko yang bisa kamu periksa sendiri.
+              Sebelum checkout, CekDulu membantu kamu melihat apakah harga, ulasan, dan rekam jejak tokonya terasa wajar. Hasilnya dirangkum dengan bahasa sederhana supaya kamu bisa mempertimbangkannya dengan lebih yakin.
             </p>
-            <p className="neutral-note"><span aria-hidden="true">ⓘ</span> Bukan vonis penipuan. Setiap temuan disertai bukti dan tingkat keyakinan.</p>
 
             <form className="url-form" onSubmit={startAnalysis} noValidate>
               <label htmlFor="tokopedia-url">Tautan produk Tokopedia</label>
@@ -103,36 +102,36 @@ export default function Home() {
           </aside>
         </section>
 
-        <section className="process-section shell" id="cara-kerja">
-          <div className="section-heading split-heading">
-            <div>
-              <span className="inspection-label">PROSEDUR PEMERIKSAAN / 03 TAHAP</span>
-              <h2>Dari tautan menjadi temuan yang bisa ditindaklanjuti.</h2>
+        <section className="process-section" id="cara-kerja">
+          <div className="shell">
+            <div className="section-heading process-heading">
+              <span className="inspection-label">CARA KERJA / 03 TAHAP</span>
+              <h2>Tiga langkah untuk memahami risiko sebelum membeli.</h2>
+              <p>Cukup tempel tautan produk. CekDulu memeriksa data publik yang tersedia, lalu menyusun temuan dan keterbatasannya dalam laporan yang mudah dipahami.</p>
             </div>
-            <p>Agent bekerja pada data publik dengan sesi anonim, lalu memisahkan fakta, indikasi, dan keterbatasan.</p>
-          </div>
-          <div className="steps-grid">
-            <article className="step-card">
-              <span className="step-number">01</span>
-              <div className="step-icon link-icon" aria-hidden="true">↗</div>
-              <h3>Tempel tautan</h3>
-              <p>Masukkan URL produk Tokopedia yang ingin kamu periksa.</p>
-              <span className="step-meta">± 5 DETIK</span>
-            </article>
-            <article className="step-card featured">
-              <span className="step-number">02</span>
-              <div className="step-icon scan-icon" aria-hidden="true"><span /></div>
-              <h3>Agent mengumpulkan bukti</h3>
-              <p>Listing, sampel review, harga pembanding, dan reputasi toko diperiksa terpisah.</p>
-              <span className="step-meta">SESI ANONIM</span>
-            </article>
-            <article className="step-card">
-              <span className="step-number">03</span>
-              <div className="step-icon report-icon" aria-hidden="true">✓</div>
-              <h3>Pahami risikonya</h3>
-              <p>Baca kontribusi risiko, bukti pendukung, kontra-sinyal, dan langkah aman.</p>
-              <span className="step-meta">LAPORAN TERSTRUKTUR</span>
-            </article>
+            <div className="steps-grid">
+              <article className="step-card">
+                <span className="step-number">01</span>
+                <div className="step-icon link-icon" aria-hidden="true">↗</div>
+                <h3>Tempel tautan</h3>
+                <p>Masukkan URL produk Tokopedia yang ingin kamu periksa.</p>
+                <span className="step-meta">± 5 DETIK</span>
+              </article>
+              <article className="step-card">
+                <span className="step-number">02</span>
+                <div className="step-icon scan-icon" aria-hidden="true"><span /></div>
+                <h3>Agent mengumpulkan bukti</h3>
+                <p>Listing, sampel review, harga pembanding, dan reputasi toko diperiksa terpisah.</p>
+                <span className="step-meta">SESI ANONIM</span>
+              </article>
+              <article className="step-card">
+                <span className="step-number">03</span>
+                <div className="step-icon report-icon" aria-hidden="true">✓</div>
+                <h3>Pahami risikonya</h3>
+                <p>Baca kontribusi risiko, bukti pendukung, kontra-sinyal, dan langkah aman.</p>
+                <span className="step-meta">LAPORAN TERSTRUKTUR</span>
+              </article>
+            </div>
           </div>
         </section>
 
@@ -188,18 +187,26 @@ export default function Home() {
         <section className="about-section shell" id="tentang">
           <div className="about-card">
             <div className="agent-profile">
-              <span className="agent-avatar">CD</span>
+              <div className="agent-portrait">
+                <img
+                  src="/agent-mascot-v2.webp"
+                  alt="Ilustrasi agent investigasi CekDulu"
+                  width="160"
+                  height="160"
+                  loading="lazy"
+                />
+              </div>
               <span className="agent-status-dot" />
+              <span className="agent-presence">AKTIF / CD-01</span>
             </div>
-            <div>
+            <div className="about-copy">
               <span className="inspection-label">AGENT INVESTIGASI / CD-01</span>
               <h2>Teliti pada bukti, netral pada kesimpulan.</h2>
               <p>Agent CekDulu tidak mengikuti instruksi dari isi listing, tidak login ke akun pengguna, dan tidak membuat bukti baru. Ia hanya merangkum sinyal dari data publik yang berhasil diperiksa.</p>
             </div>
             <div className="agent-credentials">
-              <span><b>ANONIM</b> Browser terisolasi</span>
-              <span><b>TERSTRUKTUR</b> Setiap temuan bersumber</span>
-              <span><b>TERBATAS</b> Tidak melewati CAPTCHA</span>
+              <span><b>ANONIM</b><em>Browser terisolasi</em></span>
+              <span><b>TERSTRUKTUR</b><em>Setiap temuan disertai bukti</em></span>
             </div>
           </div>
         </section>

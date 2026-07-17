@@ -127,7 +127,6 @@ export default function ResultPage() {
                 onClick={() => setActiveTab(tab)}
               >
                 {tab}
-                {tab === "Ringkasan" && <span>7</span>}
               </button>
             ))}
           </nav>
@@ -170,7 +169,15 @@ export default function ResultPage() {
               <h2>Sebelum membeli</h2>
               <p>Laporan ini bukan akhir pemeriksaan. Gunakan temuan di atas untuk meminta bukti tambahan dari penjual.</p>
               <div className="agent-signoff">
-                <span className="agent-avatar small">CD</span>
+                <span className="agent-signoff-mascot">
+                  <img
+                    src="/agent-mascot-v2.webp"
+                    alt="Maskot Agent CekDulu"
+                    width="52"
+                    height="52"
+                    loading="lazy"
+                  />
+                </span>
                 <div><b>Disusun oleh Agent CD-01</b><span>Scoring protocol mvp-1 · Confidence sedang</span></div>
               </div>
             </div>
