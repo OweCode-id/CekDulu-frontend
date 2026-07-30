@@ -605,6 +605,15 @@ input:focus-visible {
   min-height: 125px;
 }
 
+.product-visual.has-image {
+  background: var(--paper-white);
+}
+
+.product-image {
+  object-fit: contain;
+  object-position: center;
+}
+
 .phone-back {
   position: relative;
   width: 112px;
@@ -669,6 +678,7 @@ input:focus-visible {
 
 .product-tag {
   position: absolute;
+  z-index: 2;
   right: 10px;
   bottom: 10px;
   padding: 4px 7px;

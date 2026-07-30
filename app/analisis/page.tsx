@@ -190,7 +190,10 @@ function AnalysisContent() {
         <div className="analysis-layout">
           <aside className="product-case-card">
             <div className="case-scan-window">
-              <ProductVisual />
+              <ProductVisual
+                imageUrl={analysis?.productImageUrl}
+                productName={product.productName}
+              />
               {!completed && !failed && <span className="scan-line" />}
               <span className="case-corner top-left" />
               <span className="case-corner top-right" />
