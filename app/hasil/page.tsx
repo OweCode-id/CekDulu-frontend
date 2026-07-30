@@ -166,7 +166,11 @@ function ResultContent() {
 
           <div className="report-summary-grid">
             <div className="product-summary">
-              <ProductVisual compact />
+              <ProductVisual
+                compact
+                imageUrl={analysis.productImageUrl}
+                productName={product.productName}
+              />
               <div>
                 <span className="source-badge">TOKOPEDIA · DATA PUBLIK</span>
                 <h1>{product.productName}</h1>
@@ -281,7 +285,7 @@ function ResultContent() {
             </div>
           )}
 
-          {reasons.length > 0 && (
+          {activeTab === "Ringkasan" && reasons.length > 0 && (
             <div className="reason-panel">
               <span className="inspection-label">ALASAN UTAMA</span>
               <ul>
